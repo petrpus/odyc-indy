@@ -1,12 +1,22 @@
-import { createGame } from 'odyc';
+import { createGame } from "odyc";
+import { Howl, Howler } from "howler";
+
+const bgMusic = new Howl({
+  src: ["src/assets/adventure.ogg", "src/assets/adventure.mp3"],
+  autoplay: true,
+  loop: true,
+  volume: 0.5,
+});
 
 let items = [];
 let count = 0;
+let frame = 0;
+
 const pickUp = async (target) => {
   game.player.position = target.position;
   items.push(target.symbol);
   target.remove();
-  await game.playSound('PICKUP', 24);
+  await game.playSound("PICKUP", 24);
 };
 
 const gameOver = async (message) => {
@@ -21,11 +31,82 @@ const gameOver = async (message) => {
 			...0....
 			`;
   setTimeout(async () => {
-    game.playSound('FALL', 4);
+    game.playSound("FALL", 4);
     game.end(
       `%<4>*** GAME OVER! ***<4>%\n\n<5>${message}<5>\n\n Press SPACE to restart.`
     );
   }, 1000);
+};
+
+const fireSprite = `
+  ....4...
+  ....4...
+  ..5445..
+  .564645.
+  .5444665
+  56656465
+  .566565.
+  ..5565..
+  `;
+
+const fireSprite2 = `
+  ...4....
+  ...4....
+  ..5445..
+  .546465.
+  5666445.
+  56465665
+  .565665.
+  ..5655..
+  `;
+
+function createFlippingFireTemplate(speed = 10) {
+  console.log("creating flipping fire template");
+  let count = 0;
+  let frame = 0;
+
+  return () => {
+    if (++count >= speed) {
+      count = 0;
+      frame = 1 - frame;
+    }
+    console.log(frame);
+    return {
+      sprite: frame === 0 ? fireSprite : fireSprite2,
+      async onCollide(target) {
+        if (items.includes("e")) {
+          await game.playSound("HIT", 13);
+          target.sprite = `
+            ....4...
+            ...34...
+            ..3245..
+            .323245.
+            33333365
+            .3232465
+            ..33625.
+            ....35..
+          `;
+          setTimeout(async () => {
+            target.remove();
+          }, 1000);
+        } else {
+          await game.playSound("EXPLOSION", 18);
+          await gameOver("You got burned, next time use a fire extinguisher.");
+        }
+      },
+      onScreenEnter() {
+        items = [];
+        count = 0;
+      },
+    };
+  };
+}
+
+const playAudio = () => {
+  const audio = document.getElementById("bg-music");
+  audio.play().catch((err) => {
+    console.warn("Playback failed:", err);
+  });
 };
 
 const game = createGame({
@@ -55,7 +136,7 @@ use arrows to move, press SPACE to continue action
   templates: {
     x: {
       solid: false,
-      sound: ['PICKUP', 12],
+      sound: ["PICKUP", 12],
       sprite: `
         ........
         .933333.
@@ -96,13 +177,13 @@ use arrows to move, press SPACE to continue action
         .066660.
       `,
       async onCollide(target) {
-        if (!items.includes('k')) {
-          game.playSound('HIT', 33);
-          console.log('closed');
+        if (!items.includes("k")) {
+          game.playSound("HIT", 33);
+          console.log("closed");
         } else if (count < 3) {
-          game.playSound('HIT', 33);
+          game.playSound("HIT", 33);
           game.openMessage(
-            'You have to collect all flags!\n\nPress SPACE to continue'
+            "You have to collect all flags!\n\nPress SPACE to continue"
           );
           return;
         } else {
@@ -117,9 +198,9 @@ use arrows to move, press SPACE to continue action
             .033330.
           `;
           setTimeout(async () => {
-            await game.playSound('PICKUP', 3);
+            await game.playSound("PICKUP", 3);
             await game.end(
-              '<7>*** YOU WON !!! ***<7>\n\nPress SPACE to play again.'
+              "<7>*** YOU WON !!! ***<7>\n\nPress SPACE to play again."
             );
           }, 500);
         }
@@ -156,19 +237,10 @@ use arrows to move, press SPACE to continue action
       },
     },
     f: {
-      sprite: `
-      ....4...
-      ....4...
-      ..5445..
-      .564645.
-      .5444665
-      56656465
-      .566565.
-      ..5565..
-      `,
+      sprite: fireSprite,
       async onCollide(target) {
-        if (items.includes('e')) {
-          await game.playSound('HIT', 13);
+        if (items.includes("e")) {
+          await game.playSound("HIT", 13);
           target.sprite = `
             ....4...
             ...34...
@@ -183,13 +255,17 @@ use arrows to move, press SPACE to continue action
             target.remove();
           }, 1000);
         } else {
-          await game.playSound('EXPLOSION', 18);
-          await gameOver('You got burned, next time use a fire extinguisher.');
+          await game.playSound("EXPLOSION", 18);
+          await gameOver("You got burned, next time use a fire extinguisher.");
         }
       },
-      onScreenEnter() {
+      onScreenEnter(target) {
         items = [];
         count = 0;
+        setInterval(() => {
+          frame = 1 - frame;
+          target.sprite = frame === 0 ? fireSprite : fireSprite2;
+        }, 300);
       },
     },
     p: {
@@ -204,9 +280,9 @@ use arrows to move, press SPACE to continue action
         ........
       `,
       async onCollide() {
-        game.playSound('BLIP', 1);
+        game.playSound("BLIP", 1);
         game.openMessage(
-          'Remember the password:\n\n<3>a3*F<3> \n\nPress SPACE to close.'
+          "Remember the password:\n\n<3>a3*F<3> \n\nPress SPACE to close."
         );
       },
     },
@@ -222,12 +298,12 @@ use arrows to move, press SPACE to continue action
         21122112
       `,
       async onCollide(target) {
-        const choice = await game.prompt('3a*F', 'a3*F', 'a3@F', 'a*F3');
+        const choice = await game.prompt("3a*F", "a3*F", "a3@F", "a*F3");
         if (choice === 1) {
-          await game.playSound('POWERUP', 1);
+          await game.playSound("POWERUP", 1);
           target.remove();
         } else {
-          gameOver('You need to know the right password!');
+          gameOver("You need to know the right password!");
         }
       },
     },
@@ -243,23 +319,23 @@ use arrows to move, press SPACE to continue action
         .88.88.9
       `,
       async onCollide(target) {
-        if (items.includes('s')) {
-          await game.playSound('HIT', 13);
+        if (items.includes("s")) {
+          await game.playSound("HIT", 13);
           target.sprite = `
             ........
             ........
             ........
-            ....88.8
-            .68.0088
-            .63840..
-            .68.4488
-            ....4448
+            ...88.8.
+            68.0088.
+            63840...
+            68.4488.
+            ...4448.
           `;
           setTimeout(async () => {
             target.remove();
           }, 1000);
         } else {
-          await game.openDialog('^You shall not pass!^');
+          await game.openDialog("^You shall not pass!^");
         }
       },
     },
