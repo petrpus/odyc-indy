@@ -298,12 +298,15 @@ use arrows (or slide) \n to move,\n\n press SPACE (or tap)\n to continue action
         21122112
       `,
       async onCollide(target) {
+        await game.openMessage(
+          "<3>Say the correct password or be eaten!<3>\n\nIn the next step\nselect the answer\nwith arrows (or slide)\n\nthen hit SPACE or tap\nto confirm the choice.\n\n>>>SPACE>>>"
+        );
         const choice = await game.prompt("3a*F", "a3*F", "a3@F", "a*F3");
         if (choice === 1) {
           await game.playSound("POWERUP", 1);
           target.remove();
         } else {
-          gameOver("You need to know the right password!");
+          gameOver("You reallyneed to know the right password!");
         }
       },
     },
@@ -335,7 +338,7 @@ use arrows (or slide) \n to move,\n\n press SPACE (or tap)\n to continue action
             target.remove();
           }, 1000);
         } else {
-          await game.openDialog("^You shall not pass!^");
+          await game.openDialog("^You shall not pass!^|>>SPACE>>");
         }
       },
     },
