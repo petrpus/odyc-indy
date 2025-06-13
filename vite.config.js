@@ -2,5 +2,5 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/odyc-indy/", // 👈 Replace with your actual repository name
+  base: "/odyc-indy/",
 });
