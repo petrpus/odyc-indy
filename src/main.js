@@ -2,10 +2,10 @@ import { createGame } from "odyc";
 import { Howl, Howler } from "howler";
 
 const bgMusic = new Howl({
-  src: ["src/assets/adventure.ogg", "src/assets/adventure.mp3"],
+  src: ["media/adventure.ogg", "media/adventure.mp3"],
   autoplay: true,
   loop: true,
-  volume: 0.5,
+  volume: 0.3,
 });
 
 let items = [];
@@ -33,7 +33,7 @@ const gameOver = async (message) => {
   setTimeout(async () => {
     game.playSound("FALL", 4);
     game.end(
-      `%<4>*** GAME OVER! ***<4>%\n\n<5>${message}<5>\n\n Press SPACE to restart.`
+      `%<4>*** GAME OVER! ***<4>%\n\n<5>${message}<5>\n\n Press SPACE or tap to restart.`
     );
   }, 1000);
 };
@@ -112,13 +112,13 @@ const playAudio = () => {
 const game = createGame({
   title: `<7>The Last Mission of
   
-INDIANA JONES<7>
+_INDIANA JONES_<7>
   
 
 <5>collect all flags and escape the maze<5>
 
 
-use arrows to move, press SPACE to continue action
+use arrows (or slide) \n to move,\n\n press SPACE (or tap)\n to continue action
   `,
   player: {
     sprite: `
@@ -178,12 +178,12 @@ use arrows to move, press SPACE to continue action
       `,
       async onCollide(target) {
         if (!items.includes("k")) {
-          game.playSound("HIT", 33);
+          game.playSound("FALL", 33);
           console.log("closed");
         } else if (count < 3) {
-          game.playSound("HIT", 33);
+          game.playSound("FALL", 33);
           game.openMessage(
-            "You have to collect all flags!\n\nPress SPACE to continue"
+            "You have to collect all flags!\n\nPress SPACE or tap to continue"
           );
           return;
         } else {
@@ -200,7 +200,7 @@ use arrows to move, press SPACE to continue action
           setTimeout(async () => {
             await game.playSound("PICKUP", 3);
             await game.end(
-              "<7>*** YOU WON !!! ***<7>\n\nPress SPACE to play again."
+              "<7>*** YOU WON !!! ***<7>\n\nPress SPACE or tap to play again."
             );
           }, 500);
         }
@@ -282,7 +282,7 @@ use arrows to move, press SPACE to continue action
       async onCollide() {
         game.playSound("BLIP", 1);
         game.openMessage(
-          "Remember the password:\n\n<3>a3*F<3> \n\nPress SPACE to close."
+          "Remember the password:\n\n<3>a3*F<3> \n\nPress  or tap to close."
         );
       },
     },
@@ -365,4 +365,11 @@ use arrows to move, press SPACE to continue action
     wewx..kw
     wwwwwwww
 	`,
+  controls: {
+    LEFT: ["ArrowLeft"],
+    RIGHT: ["ArrowRight"],
+    UP: ["ArrowUp"],
+    DOWN: ["ArrowDown"],
+    ACTION: ["Enter", "Space", "Escape"],
+  },
 });
